@@ -1,0 +1,10 @@
+# this is an example rule from a real CVE
+# A improper neutralization in version 7.2.0 through 7.2.2, 7.0.0 through 7.0.10, 6.4.0 through 6.4.9, 6.2.0 through 6.2.9, 6.0.0 through 6.0.8 allows attacker to execute unauthorized code or commands via specially crafted packets.
+
+>= 7.2.0, < 7.2.2
+>= 7.0.0, < 7.0.10
+>= 6.4.0, < 6.4.9
+>= 6.2.0, < 6.2.9
+>= 6.0.0, < 6.0.8
+
+
