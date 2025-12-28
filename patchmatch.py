@@ -21,7 +21,12 @@ def semver_is_smaller(version, target_version):
 	version_comparison_length = min([version_dot_length, target_version_dot_length])
 	for i in range(version_comparison_length):
 		try:
-			# TODO handle non-numeric versions
+			# XXX TODO handle non-numeric versions
+			if "-" in version:
+				# for now just get rid of the -rc or -alpha or whatever component
+				version = version.split("-")[0]
+			if "-" in target_version:
+				target_version = target_version.split("-")[0]
 			version_component = int(version.split(".")[i])
 			target_version_component = int(target_version.split(".")[i])
 			if version_component < target_version_component:
@@ -106,13 +111,18 @@ def load_rules(filepath):
 			all_statements.append(statement)
 	return all_statements
 
-def filter_lines(input_file, rule_statements, delim):
+def filter_lines(input_file, rule_statements, delim, inverse=False):
 	matched_rows = []
+	unmatched_rows = []
 	with open(input_file,'r') as f:
 		reader = csv.reader(f, delimiter=delim)
 		for row in reader:
+			matched = False
 			# version is always the last column
 			version = row[-1].strip()
+			if version == '': #no version, skip
+				elog(f"Warning: Skipping line {row[0]} due to no version")
+				continue
 			# print('version:', version)
 			for statement in rule_statements:
 				# each statement is an OR, each rule is an AND
@@ -124,17 +134,24 @@ def filter_lines(input_file, rule_statements, delim):
 						rule_match_count += 1
 				if rule_match_count == len(statement):
 					matched_rows.append(row)
+					matched = True
 					break
-	return matched_rows
+			if not matched and inverse:
+				unmatched_rows.append(row)
+	if inverse:
+		return unmatched_rows
+	else:
+		return matched_rows
 
 def help():
 	print("Usage: %s [-o outfile] <rule file> <input file>" %(sys.argv[0]))
 	print("Example:\n%s example.rules data.tsv" %(sys.argv[0]))
 
 def main():
-	opts, args = getopt.getopt(sys.argv[1:], 'ho:d:')
+	opts, args = getopt.getopt(sys.argv[1:], 'ho:d:i')
 	custom_delimeter = None
 	outfile = None
+	inverse = False
 	for o,a in opts:
 		if o == '-h':
 			help()
@@ -145,6 +162,11 @@ def main():
 
 		if o == '-o':
 			outfile = a
+
+		if o == '-i':
+			# inverse mode that returns only the 'patched' lines
+			elog("Running in inverse mode")
+			inverse = True
 
 
 
@@ -162,8 +184,7 @@ def main():
 			custom_delimeter = '\t'
 		else:
 			custom_delimeter = ','
-
-	matched_rows = filter_lines(filename, rules, delim=custom_delimeter)
+	matched_rows = filter_lines(filename, rules, delim=custom_delimeter, inverse=inverse)
 	# print(matched_rows)
 	if outfile:
 		with open(outfile, 'w+') as f:
