@@ -27,20 +27,27 @@ If a version number like `1.2.x` is in a CVE description, it should be translate
 
 ## Usage
 
-Write a rule file, and have an input file in CSV/TSV/any delimited file format.
+Write a rules file, and have an input file in CSV/TSV/any delimited file format.
 
 If your file is in a custom delimited format (e.g. psv with pipes `|`), then specify the delimiter via `-d` like `-d '|'`
 
 Otherwise the default format is CSV, and the program detects if you are using TSV using file extension (`.tsv`)
 
-`./patchmatch.py example.rule data.csv`
+`./patchmatch.py example.rules data.csv`
 
 The version should always be the **last column** of the csv file e.g. `http://example.com,1.2.3`, other than that the other columns dont matter and are not read.
 
 
 You can specify an output file like so:
 
-`./patchmatch.py -o out.csv example.rule data.csv`
+`./patchmatch.py -o out.csv example.rules data.csv`
+
+## Inverse mode
+
+Use inverse mode to only show the lines that were not matched (so "patched" lines only, depending on your rules file.)
+
+`./patchmatch.py -i example.rules data.csv`
+
 
 ## Example use case
 
